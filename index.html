@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>NEXUS CRM</title>
+<meta name="theme-color" content="#0a0a0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NEXUS CRM">
+<link rel="manifest" id="pwa-manifest">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;
+    --border:#2a2a3a;--text:#e8e8f0;--text2:#8888aa;
+    --green:#00e676;--yellow:#ffca28;--red:#ff1744;
+    --blue:#2979ff;--accent:#00e5ff;--orange:#ff6d00;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;}
+  .logo{font-size:1.3rem;font-weight:800;color:var(--accent);}
+  .logo span{color:var(--text2);font-weight:400;}
+  .header-stats{display:flex;gap:24px;align-items:center;}
+  .hstat{display:flex;flex-direction:column;align-items:center;font-family:'DM Mono',monospace;}
+  .hstat-val{font-size:1.4rem;font-weight:700;line-height:1;}
+  .hstat-label{font-size:0.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;}
+  .time-display{font-family:'DM Mono',monospace;font-size:0.9rem;color:var(--accent);background:rgba(0,229,255,0.08);padding:6px 14px;border-radius:6px;border:1px solid rgba(0,229,255,0.2);}
+
+  .alert-banner{display:none;align-items:center;gap:12px;padding:14px 32px;background:rgba(255,23,68,0.12);border-bottom:1px solid rgba(255,23,68,0.3);animation:pulse-bg 2s infinite;}
+  .alert-banner.active{display:flex;}
+  @keyframes pulse-bg{0%,100%{background:rgba(255,23,68,0.12)}50%{background:rgba(255,23,68,0.25)}}
+  .alert-dot{width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:blink 1s infinite;flex-shrink:0;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+  .alert-phone{font-family:'DM Mono',monospace;font-weight:700;color:var(--red);font-size:1rem;margin-left:8px;}
+
+  .main{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 65px);}
+  aside{background:var(--surface);border-right:1px solid var(--border);padding:24px 0;}
+  .nav-section{padding:0 16px;margin-bottom:8px;}
+  .nav-label{font-size:0.65rem;color:var(--text2);text-transform:uppercase;letter-spacing:2px;padding:0 12px;margin-bottom:8px;display:block;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:0.9rem;color:var(--text2);transition:all 0.2s;margin-bottom:2px;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:rgba(0,229,255,0.1);color:var(--accent);}
+  .nav-item .icon{font-size:1rem;width:20px;text-align:center;}
+  .nav-badge{margin-left:auto;background:var(--red);color:white;font-size:0.7rem;font-weight:700;padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;animation:blink 1.5s infinite;}
+  .divider{height:1px;background:var(--border);margin:16px;}
+
+  .content{padding:28px 32px;overflow-y:auto;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;transition:transform 0.2s;}
+  .stat-card:hover{transform:translateY(-2px);}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .stat-card.green::before{background:var(--green);}
+  .stat-card.orange::before{background:var(--orange);}
+  .stat-card.blue::before{background:var(--blue);}
+  .stat-card.red::before{background:var(--red);}
+  .stat-number{font-size:2.2rem;font-weight:800;font-family:'DM Mono',monospace;line-height:1;margin-bottom:4px;}
+  .stat-card.green .stat-number{color:var(--green);}
+  .stat-card.orange .stat-number{color:var(--orange);}
+  .stat-card.blue .stat-number{color:var(--blue);}
+  .stat-card.red .stat-number{color:var(--red);}
+  .stat-label{font-size:0.8rem;color:var(--text2);}
+  .stat-icon{position:absolute;top:16px;right:16px;font-size:1.5rem;opacity:0.3;}
+
+  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .page-title{font-size:1.6rem;font-weight:800;letter-spacing:-0.5px;}
+  .page-subtitle{font-size:0.85rem;color:var(--text2);margin-top:2px;font-family:'DM Mono',monospace;}
+
+  .btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;transition:all 0.2s;}
+  .btn-primary{background:var(--accent);color:#000;}
+  .btn-primary:hover{opacity:0.85;transform:translateY(-1px);}
+  .btn-danger{padding:10px 20px;border-radius:8px;border:1px solid var(--red);background:transparent;color:var(--red);font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
+  .btn-danger:hover{background:rgba(255,23,68,0.1);}
+
+  .filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .filter-btn{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:'Syne',sans-serif;font-size:0.8rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+  .filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .filter-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+  .filter-count{background:rgba(255,255,255,0.2);border-radius:10px;padding:1px 6px;font-size:0.7rem;font-family:'DM Mono',monospace;}
+
+  .leads-table{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .table-header{display:grid;grid-template-columns:40px 1.4fr 150px 130px 160px 130px;padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:0.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;}
+  .lead-row{display:grid;grid-template-columns:40px 1.4fr 150px 130px 160px 130px;padding:14px 20px;border-bottom:1px solid var(--border);align-items:center;transition:background 0.15s;font-size:0.88rem;}
+  .lead-row:last-child{border-bottom:none;}
+  .lead-row:hover{background:var(--surface2);}
+  .lead-row.urgent{background:rgba(255,23,68,0.05);animation:row-pulse 2s infinite;}
+  @keyframes row-pulse{0%,100%{background:rgba(255,23,68,0.05)}50%{background:rgba(255,23,68,0.13)}}
+
+  .status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;white-space:nowrap;}
+  .status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .status.agendado{background:rgba(0,230,118,0.12);color:var(--green);}
+  .status.agendado .status-dot{background:var(--green);}
+  .status.no-agendado{background:rgba(255,109,0,0.12);color:var(--orange);}
+  .status.no-agendado .status-dot{background:var(--orange);}
+  .status.seguimiento{background:rgba(41,121,255,0.12);color:var(--blue);}
+  .status.seguimiento .status-dot{background:var(--blue);}
+  .status.urgente{background:rgba(255,23,68,0.15);color:var(--red);}
+  .status.urgente .status-dot{background:var(--red);animation:blink 0.8s infinite;box-shadow:0 0 6px var(--red);}
+  .status.convertido{background:rgba(0,229,255,0.12);color:var(--accent);}
+  .status.convertido .status-dot{background:var(--accent);}
+
+  /* RECORDATORIO */
+  .reminder-badge{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:0.72rem;padding:3px 8px;border-radius:6px;margin-top:4px;}
+  .reminder-badge.pending{background:rgba(255,202,40,0.1);color:var(--yellow);border:1px solid rgba(255,202,40,0.3);}
+  .reminder-badge.soon{background:rgba(255,109,0,0.15);color:var(--orange);border:1px solid rgba(255,109,0,0.4);animation:blink 1s infinite;}
+  .reminder-badge.overdue{background:rgba(255,23,68,0.15);color:var(--red);border:1px solid rgba(255,23,68,0.4);animation:blink 0.6s infinite;}
+  .reminder-badge.done{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2);}
+
+  .timer{font-family:'DM Mono',monospace;font-size:0.82rem;padding:3px 8px;border-radius:6px;display:inline-block;}
+  .timer.safe{color:var(--green);background:rgba(0,230,118,0.08);}
+  .timer.warn{color:var(--yellow);background:rgba(255,202,40,0.08);}
+  .timer.danger{color:var(--red);background:rgba(255,23,68,0.08);font-weight:700;}
+
+  .actions{display:flex;gap:5px;}
+  .action-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.85rem;transition:all 0.2s;color:var(--text2);}
+  .action-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.08);}
+  .action-btn.call:hover{border-color:var(--green);color:var(--green);background:rgba(0,230,118,0.08);}
+  .action-btn.del:hover{border-color:var(--red);color:var(--red);background:rgba(255,23,68,0.08);}
+
+  .avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--blue));display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#000;flex-shrink:0;}
+  .lead-name{font-weight:600;font-size:0.9rem;}
+  .lead-sub{font-size:0.75rem;color:var(--text2);font-family:'DM Mono',monospace;margin-top:1px;}
+
+  /* MODALES */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:520px;max-width:95vw;animation:modal-in 0.25s ease;}
+  @keyframes modal-in{from{transform:scale(0.95) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  .modal-title{font-size:1.2rem;font-weight:800;margin-bottom:20px;}
+  .form-group{margin-bottom:14px;}
+  .form-label{display:block;font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .form-label .opc{color:var(--text2);font-size:0.65rem;font-weight:400;margin-left:4px;}
+  .form-input,.form-select{width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Syne',sans-serif;font-size:0.9rem;transition:border-color 0.2s;}
+  .form-input:focus,.form-select:focus{outline:none;border-color:var(--accent);}
+  .form-input::placeholder{color:var(--text2);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;}
+  .btn-ghost{padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:'Syne',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
+  .btn-ghost:hover{border-color:var(--text);color:var(--text);}
+
+  .reminder-section{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:4px;}
+  .reminder-title{font-size:0.8rem;color:var(--accent);font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .reminder-tabs{display:flex;gap:8px;margin-bottom:12px;}
+  .rem-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:'Syne',sans-serif;font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
+  .rem-tab.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+
+  /* MODAL LLAMADA */
+  .call-modal{text-align:center;}
+  .call-animation{width:90px;height:90px;border-radius:50%;background:rgba(0,230,118,0.1);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 12px;animation:call-ring 1.5s infinite;}
+  @keyframes call-ring{0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,0.4)}50%{box-shadow:0 0 0 20px rgba(0,230,118,0)}}
+  .call-name{font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+  .call-number{font-family:'DM Mono',monospace;color:var(--accent);font-size:1.2rem;margin-bottom:4px;}
+  .call-email{font-size:0.8rem;color:var(--text2);margin-bottom:16px;}
+  .call-timer-display{font-family:'DM Mono',monospace;font-size:2.2rem;font-weight:700;color:var(--green);margin-bottom:20px;}
+  .call-actions{display:flex;gap:12px;justify-content:center;}
+  .call-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;font-size:1.2rem;transition:all 0.2s;}
+  .call-btn.end{background:var(--red);color:white;}
+  .call-btn.end:hover{transform:scale(1.1);}
+  .call-btn.mute{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+
+  /* MODAL ALARMA */
+  .alarm-modal{text-align:center;}
+  .alarm-icon{font-size:3.5rem;margin-bottom:8px;animation:shake 0.3s infinite;}
+  @keyframes shake{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+  .alarm-title{font-size:1.5rem;font-weight:800;color:var(--red);margin-bottom:6px;}
+  .alarm-subtitle{font-size:0.85rem;color:var(--text2);margin-bottom:12px;}
+  .alarm-name{font-size:1.2rem;font-weight:700;margin-bottom:4px;}
+  .alarm-phone{font-family:'DM Mono',monospace;font-size:1.8rem;color:var(--accent);font-weight:700;margin:12px 0;}
+  .alarm-info{font-size:0.82rem;color:var(--text2);margin-bottom:20px;line-height:1.6;}
+  .alarm-actions{display:flex;gap:10px;justify-content:center;}
+
+  /* NOTIFICACIÓN */
+  .notification{position:fixed;top:20px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;min-width:300px;z-index:300;transform:translateX(120%);transition:transform 0.3s ease;display:flex;align-items:flex-start;gap:12px;}
+  .notification.show{transform:translateX(0);}
+  .notification.red{border-left:4px solid var(--red);}
+  .notification.green{border-left:4px solid var(--green);}
+  .notification.blue{border-left:4px solid var(--blue);}
+  .notification.yellow{border-left:4px solid var(--yellow);}
+  .notif-icon{font-size:1.2rem;}
+  .notif-title{font-weight:700;font-size:0.9rem;margin-bottom:2px;}
+  .notif-msg{font-size:0.8rem;color:var(--text2);}
+
+  .empty{text-align:center;padding:60px;color:var(--text2);}
+  .empty-icon{font-size:3rem;margin-bottom:12px;opacity:0.3;}
+
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+  input[type="datetime-local"],input[type="date"],input[type="time"]{color-scheme:dark;}
+
+  /* PWA INSTALL BANNER */
+  .pwa-banner{display:none;align-items:center;gap:12px;padding:12px 20px;background:rgba(0,229,255,0.08);border-bottom:1px solid rgba(0,229,255,0.2);font-size:0.85rem;}
+  .pwa-banner.show{display:flex;}
+  .pwa-banner-text{flex:1;color:var(--text);}
+  .pwa-banner-text strong{color:var(--accent);}
+  .pwa-banner-text small{display:block;color:var(--text2);font-size:0.75rem;font-family:'DM Mono',monospace;margin-top:2px;}
+  .pwa-install-btn{padding:8px 16px;background:var(--accent);color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;cursor:pointer;white-space:nowrap;}
+  .pwa-dismiss{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer;padding:4px 8px;}
+
+  /* NOTIF PERMISSION BANNER */
+  .notif-permission-bar{display:none;align-items:center;gap:12px;padding:10px 20px;background:rgba(255,202,40,0.08);border-bottom:1px solid rgba(255,202,40,0.2);font-size:0.82rem;}
+  .notif-permission-bar.show{display:flex;}
+  .notif-permission-bar span{flex:1;color:var(--yellow);}
+  .notif-permission-bar button{padding:6px 14px;border-radius:7px;border:1px solid var(--yellow);background:transparent;color:var(--yellow);font-family:'Syne',sans-serif;font-size:0.8rem;cursor:pointer;font-weight:700;}
+
+  /* MOBILE RESPONSIVE */
+  @media(max-width:700px){
+    .main{grid-template-columns:1fr;}
+    aside{display:none;}
+    .content{padding:16px;}
+    .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+    .table-header{display:none;}
+    .lead-row{grid-template-columns:1fr;gap:8px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;}
+    .lead-row:last-child{border-bottom:1px solid var(--border);}
+    .leads-table{background:transparent;border:none;}
+    .header-stats .hstat:nth-child(n+3){display:none;}
+    header{padding:12px 16px;}
+    .page-title{font-size:1.2rem;}
+    .filters{gap:6px;}
+    .filter-btn{font-size:0.72rem;padding:6px 10px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="notification" id="notification">
+  <div class="notif-icon" id="notif-icon">🔔</div>
+  <div>
+    <div class="notif-title" id="notif-title">-</div>
+    <div class="notif-msg" id="notif-msg">-</div>
+  </div>
+</div>
+
+<!-- NOTIFICACIONES PERMISO -->
+<div class="notif-permission-bar" id="notif-bar">
+  <span>🔔 Activa las notificaciones para recibir alertas de llamadas en tu celular aunque la app esté cerrada</span>
+  <button onclick="requestNotifPermission()">Activar</button>
+  <button onclick="document.getElementById('notif-bar').classList.remove('show')" style="border:none;background:none;color:var(--text2);cursor:pointer;font-size:1.1rem">✕</button>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div class="pwa-banner" id="pwa-banner">
+  <span style="font-size:1.4rem">📲</span>
+  <div class="pwa-banner-text">
+    <strong>Instalar NEXUS CRM en tu celular</strong>
+    <small>Acceso directo + notificaciones en segundo plano</small>
+  </div>
+  <button class="pwa-install-btn" onclick="installPWA()">Instalar</button>
+  <button class="pwa-dismiss" onclick="dismissPWA()">✕</button>
+</div>
+
+<header>
+  <div class="logo">NEXUS<span>CRM</span></div>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="hstat-val" id="h-total" style="color:var(--accent)">0</div>
+      <div class="hstat-label">Total</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="h-recordatorios" style="color:var(--yellow)">0</div>
+      <div class="hstat-label">Pendientes</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="h-urgentes" style="color:var(--red)">0</div>
+      <div class="hstat-label">Urgentes</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="h-conv" style="color:var(--green)">0</div>
+      <div class="hstat-label">Convertidos</div>
+    </div>
+    <div class="time-display" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<div class="alert-banner" id="alert-banner">
+  <div class="alert-dot"></div>
+  <span id="alert-text">🚨 Leads urgentes</span>
+  <span class="alert-phone" id="alert-phone"></span>
+</div>
+
+<div class="main">
+  <aside>
+    <div class="nav-section">
+      <span class="nav-label">Principal</span>
+      <div class="nav-item active"><span class="icon">👥</span> CRM / Leads <span class="nav-badge" id="badge-urg" style="display:none">!</span></div>
+      <div class="nav-item"><span class="icon">📞</span> Llamadas</div>
+      <div class="nav-item"><span class="icon">💰</span> Ventas</div>
+      <div class="nav-item"><span class="icon">📦</span> Inventario</div>
+    </div>
+    <div class="divider"></div>
+    <div class="nav-section">
+      <span class="nav-label">Análisis</span>
+      <div class="nav-item"><span class="icon">📊</span> Reportes</div>
+      <div class="nav-item"><span class="icon">🤝</span> Post-Venta</div>
+    </div>
+    <div class="divider"></div>
+    <div class="nav-section">
+      <span class="nav-label">Sistema</span>
+      <div class="nav-item"><span class="icon">⚙️</span> Configuración</div>
+    </div>
+  </aside>
+
+  <div class="content">
+    <div class="stats-grid">
+      <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-number" id="s-agendado">0</div><div class="stat-label">Agendados</div></div>
+      <div class="stat-card orange"><div class="stat-icon">📋</div><div class="stat-number" id="s-noagendado">0</div><div class="stat-label">No Agendados</div></div>
+      <div class="stat-card blue"><div class="stat-icon">🔄</div><div class="stat-number" id="s-seguimiento">0</div><div class="stat-label">Seguimiento</div></div>
+      <div class="stat-card red"><div class="stat-icon">🚨</div><div class="stat-number" id="s-urgente">0</div><div class="stat-label">Urgentes</div></div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Panel de Leads</div>
+        <div class="page-subtitle">Alarma automática · Rojo a los 7 días sin gestión</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-danger" onclick="clearAll()">🗑️ Limpiar todo</button>
+        <button class="btn btn-primary" onclick="openModal()">+ Nuevo Lead</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterLeads('todos',this)">Todos <span class="filter-count" id="fc-todos">0</span></button>
+      <button class="filter-btn" onclick="filterLeads('agendado',this)">✅ Agendado <span class="filter-count" id="fc-agendado">0</span></button>
+      <button class="filter-btn" onclick="filterLeads('no-agendado',this)">📋 No Agendado <span class="filter-count" id="fc-noagendado">0</span></button>
+      <button class="filter-btn" onclick="filterLeads('seguimiento',this)">🔄 Seguimiento <span class="filter-count" id="fc-seguimiento">0</span></button>
+      <button class="filter-btn" onclick="filterLeads('urgente',this)">🔴 Urgente <span class="filter-count" id="fc-urgente">0</span></button>
+      <button class="filter-btn" onclick="filterLeads('convertido',this)">⭐ Convertido <span class="filter-count" id="fc-convertido">0</span></button>
+    </div>
+
+    <div class="leads-table">
+      <div class="table-header">
+        <div></div>
+        <div>CONTACTO</div>
+        <div>TELÉFONO</div>
+        <div>ESTADO</div>
+        <div>RECORDATORIO</div>
+        <div>ACCIONES</div>
+      </div>
+      <div id="leads-body">
+        <div class="empty"><div class="empty-icon">👥</div><div>No hay leads aún. ¡Agrega el primero!</div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;color:var(--text2);font-size:0.75rem;font-family:'DM Mono',monospace;text-align:center;">
+      Alarma con sonido · Funciona aunque cambies de pestaña · Rojo automático a los 7 días
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO LEAD -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">➕ Nuevo Lead</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nombre completo</label>
+        <input class="form-input" id="f-nombre" placeholder="Juan González" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono</label>
+        <input class="form-input" id="f-telefono" placeholder="+56 9 1234 5678" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Correo</label>
+        <input class="form-input" id="f-correo" placeholder="correo@email.com" type="email"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">RUT <span class="opc">(opcional)</span></label>
+        <input class="form-input" id="f-rut" placeholder="12.345.678-9" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select class="form-select" id="f-estado">
+          <option value="no-agendado">📋 No Agendado</option>
+          <option value="agendado">✅ Agendado</option>
+          <option value="seguimiento">🔄 Seguimiento</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas <span class="opc">(opcional)</span></label>
+        <input class="form-input" id="f-notas" placeholder="Contexto..." />
+      </div>
+    </div>
+
+    <!-- RECORDATORIO -->
+    <div class="reminder-section">
+      <div class="reminder-title">⏰ Programar Recordatorio de Llamada</div>
+      <div class="reminder-tabs">
+        <button class="rem-tab active" onclick="setRemTab('ninguno',this)">Sin recordatorio</button>
+        <button class="rem-tab" onclick="setRemTab('fecha',this)">📅 Fecha y hora exacta</button>
+        <button class="rem-tab" onclick="setRemTab('horas',this)">⏱️ En cuántas horas</button>
+      </div>
+
+      <div id="rem-ninguno"></div>
+
+      <div id="rem-fecha" style="display:none">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">¿Cuándo llamar?</label>
+          <input class="form-input" type="datetime-local" id="f-fecha-hora" />
+        </div>
+      </div>
+
+      <div id="rem-horas" style="display:none">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Llamar en cuántas horas más</label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input class="form-input" type="number" id="f-horas" placeholder="3" min="1" max="72" style="width:100px"/>
+            <span style="color:var(--text2);font-size:0.9rem">horas desde ahora</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="addLead()">Guardar Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LLAMADA -->
+<div class="modal-overlay" id="call-modal">
+  <div class="modal call-modal">
+    <div class="call-animation">📞</div>
+    <div class="call-name" id="call-name">-</div>
+    <div class="call-number" id="call-number">-</div>
+    <div class="call-email" id="call-email">-</div>
+    <div class="call-timer-display" id="call-timer-display">00:00</div>
+    <div style="font-size:0.8rem;color:var(--text2);margin-bottom:20px;font-family:'DM Mono',monospace">Llamada en curso · Registrando automáticamente</div>
+    <div class="call-actions">
+      <button class="call-btn mute" onclick="toggleMute()" id="mute-btn">🎤</button>
+      <button class="call-btn end" onclick="endCall()">📵</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALARMA -->
+<div class="modal-overlay" id="alarm-modal">
+  <div class="modal alarm-modal">
+    <div class="alarm-icon">🚨</div>
+    <div class="alarm-title">¡LLAMAR AHORA!</div>
+    <div class="alarm-subtitle" id="alarm-subtitle">Recordatorio programado</div>
+    <div class="alarm-name" id="alarm-name">-</div>
+    <div class="alarm-phone" id="alarm-phone">-</div>
+    <div class="alarm-info" id="alarm-info">-</div>
+    <div class="alarm-actions">
+      <button class="btn-ghost" onclick="snoozeAlarm()">😴 En 30 min</button>
+      <button class="btn-ghost" onclick="closeAlarm()">Cerrar</button>
+      <button class="btn btn-primary" onclick="callFromAlarm()">📞 Llamar Ahora</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let leads = [];
+  let currentFilter = 'todos';
+  let callTimer = null;
+  let callSeconds = 0;
+  let currentCallId = null;
+  let muted = false;
+  let alarmLeadId = null;
+  let currentRemTab = 'ninguno';
+  let audioCtx = null;
+
+  // ─── SONIDO ──────────────────────────────────────────
+  function playAlarmSound() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const freqs = [880, 660, 880, 660, 880];
+      freqs.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime + i * 0.3);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.3 + 0.25);
+        osc.start(audioCtx.currentTime + i * 0.3);
+        osc.stop(audioCtx.currentTime + i * 0.3 + 0.25);
+      });
+    } catch(e) { console.log('Audio no disponible'); }
+  }
+
+  function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  document.addEventListener('click', initAudio, { once: true });
+
+  // ─── RELOJ ───────────────────────────────────────────
+  function updateClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('es-CL');
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ─── TIEMPO ──────────────────────────────────────────
+  function formatAge(ms) {
+    const d = Math.floor(ms/86400000);
+    const h = Math.floor((ms%86400000)/3600000);
+    const m = Math.floor((ms%3600000)/60000);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  }
+
+  function timerClass(ms, estado) {
+    if (estado === 'convertido') return 'safe';
+    const d = ms / 86400000;
+    if (d < 3) return 'safe';
+    if (d < 6) return 'warn';
+    return 'danger';
+  }
+
+  function formatDateTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    return d.toLocaleDateString('es-CL') + ' ' + d.toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
+  }
+
+  // ─── RECORDATORIO TABS ───────────────────────────────
+  function setRemTab(tab, btn) {
+    currentRemTab = tab;
+    document.querySelectorAll('.rem-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['rem-ninguno','rem-fecha','rem-horas'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById('rem-' + tab).style.display = 'block';
+  }
+
+  // ─── AUTO STATUS ─────────────────────────────────────
+  function autoUpdateStatus() {
+    const now = Date.now();
+    leads.forEach(l => {
+      if (l.estado === 'convertido') return;
+      // 7 días sin gestión → urgente
+      if ((now - l.ultimaGestion) / 86400000 >= 7 && l.estado !== 'urgente') {
+        l.estado = 'urgente';
+        showAlarm(l.id, 'urgent7');
+      }
+      // Recordatorio programado
+      if (l.recordatorio && !l.recordatorioDisparado && now >= l.recordatorio) {
+        l.recordatorioDisparado = true;
+        showAlarm(l.id, 'recordatorio');
+      }
+    });
+  }
+
+  // ─── STATS ───────────────────────────────────────────
+  function updateStats() {
+    const c = {agendado:0,'no-agendado':0,seguimiento:0,urgente:0,convertido:0};
+    let recs = 0;
+    const now = Date.now();
+    leads.forEach(l => {
+      if (c[l.estado] !== undefined) c[l.estado]++;
+      if (l.recordatorio && !l.recordatorioDisparado && l.recordatorio > now) recs++;
+    });
+    document.getElementById('s-agendado').textContent = c.agendado;
+    document.getElementById('s-noagendado').textContent = c['no-agendado'];
+    document.getElementById('s-seguimiento').textContent = c.seguimiento;
+    document.getElementById('s-urgente').textContent = c.urgente;
+    document.getElementById('h-total').textContent = leads.length;
+    document.getElementById('h-urgentes').textContent = c.urgente;
+    document.getElementById('h-conv').textContent = c.convertido;
+    document.getElementById('h-recordatorios').textContent = recs;
+
+    const badge = document.getElementById('badge-urg');
+    badge.style.display = c.urgente > 0 ? 'inline' : 'none';
+    badge.textContent = c.urgente;
+
+    document.getElementById('fc-todos').textContent = leads.length;
+    document.getElementById('fc-agendado').textContent = c.agendado;
+    document.getElementById('fc-noagendado').textContent = c['no-agendado'];
+    document.getElementById('fc-seguimiento').textContent = c.seguimiento;
+    document.getElementById('fc-urgente').textContent = c.urgente;
+    document.getElementById('fc-convertido').textContent = c.convertido;
+
+    const banner = document.getElementById('alert-banner');
+    const urgentes = leads.filter(l => l.estado === 'urgente');
+    if (urgentes.length > 0) {
+      banner.classList.add('active');
+      document.getElementById('alert-text').textContent =
+        `🚨 ${urgentes.length} lead(s) llevan más de 7 días sin gestión. ¡Llama ahora!`;
+      document.getElementById('alert-phone').textContent =
+        urgentes[0].telefono ? `📞 ${urgentes[0].telefono}` : '';
+    } else {
+      banner.classList.remove('active');
+    }
+  }
+
+  // ─── RENDER LEADS ────────────────────────────────────
+  function getInitials(name) {
+    return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  function getReminderBadge(lead) {
+    if (!lead.recordatorio) return '';
+    const now = Date.now();
+    const diff = lead.recordatorio - now;
+    if (lead.recordatorioDisparado) {
+      return `<div class="reminder-badge done">✅ Llamado: ${formatDateTime(lead.recordatorio)}</div>`;
+    }
+    if (diff < 0) {
+      return `<div class="reminder-badge overdue">🔴 VENCIDO: ${formatDateTime(lead.recordatorio)}</div>`;
+    }
+    if (diff < 30 * 60000) {
+      return `<div class="reminder-badge soon">⚡ En ${Math.floor(diff/60000)} min</div>`;
+    }
+    return `<div class="reminder-badge pending">⏰ ${formatDateTime(lead.recordatorio)}</div>`;
+  }
+
+  function renderLeads() {
+    autoUpdateStatus();
+    updateStats();
+    const filtered = currentFilter === 'todos' ? leads : leads.filter(l => l.estado === currentFilter);
+    const body = document.getElementById('leads-body');
+    if (filtered.length === 0) {
+      body.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><div>No hay leads en esta categoría</div></div>`;
+      return;
+    }
+    const now = Date.now();
+    const labels = {agendado:'Agendado','no-agendado':'No Agendado',seguimiento:'Seguimiento',urgente:'URGENTE',convertido:'Convertido'};
+    body.innerHTML = filtered.map(l => {
+      const age = now - l.ultimaGestion;
+      const tc = timerClass(age, l.estado);
+      const isUrgent = l.estado === 'urgente';
+      return `
+        <div class="lead-row ${isUrgent?'urgent':''}">
+          <div class="avatar">${getInitials(l.nombre)}</div>
+          <div>
+            <div class="lead-name">${l.nombre}</div>
+            ${l.correo?`<div class="lead-sub">${l.correo}</div>`:''}
+            ${l.rut?`<div class="lead-sub">RUT: ${l.rut}</div>`:''}
+            ${l.notas?`<div class="lead-sub">${l.notas}</div>`:''}
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.9rem;color:var(--accent);font-weight:600">
+            ${l.telefono||'<span style="color:var(--text2)">Sin teléfono</span>'}
+          </div>
+          <div>
+            <span class="status ${l.estado}">
+              <span class="status-dot"></span>${labels[l.estado]}
+            </span>
+            <div style="margin-top:4px">
+              <span class="timer ${tc}">${formatAge(age)}</span>
+              ${isUrgent?'<span style="font-size:0.7rem;color:var(--red);margin-left:6px;font-weight:700">¡LLAMAR YA!</span>':''}
+            </div>
+          </div>
+          <div>${getReminderBadge(l)}</div>
+          <div class="actions" onclick="event.stopPropagation()">
+            <button class="action-btn call" onclick="startCall(${l.id})" title="Llamar">📞</button>
+            <button class="action-btn" onclick="changeStatus(${l.id})" title="Cambiar estado">🔄</button>
+            <button class="action-btn" onclick="convertLead(${l.id})" title="Convertido">⭐</button>
+            <button class="action-btn del" onclick="deleteLead(${l.id})" title="Eliminar">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ─── FILTRO ──────────────────────────────────────────
+  function filterLeads(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLeads();
+  }
+
+  // ─── MODAL NUEVO LEAD ────────────────────────────────
+  function openModal() {
+    // Poner fecha mínima = ahora
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('f-fecha-hora').min = now.toISOString().slice(0,16);
+    document.getElementById('modal').classList.add('active');
+    setTimeout(() => document.getElementById('f-nombre').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    ['f-nombre','f-telefono','f-correo','f-rut','f-notas','f-fecha-hora','f-horas'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-estado').value = 'no-agendado';
+    // Reset tabs
+    currentRemTab = 'ninguno';
+    document.querySelectorAll('.rem-tab').forEach((b,i) => b.classList.toggle('active', i===0));
+    ['rem-ninguno','rem-fecha','rem-horas'].forEach((id,i) => {
+      document.getElementById(id).style.display = i===0 ? 'block' : 'none';
+    });
+  }
+
+  function addLead() {
+    const nombre = document.getElementById('f-nombre').value.trim();
+    if (!nombre) { alert('El nombre es obligatorio'); return; }
+
+    let recordatorio = null;
+    if (currentRemTab === 'fecha') {
+      const fh = document.getElementById('f-fecha-hora').value;
+      if (fh) recordatorio = new Date(fh).getTime();
+    } else if (currentRemTab === 'horas') {
+      const h = parseFloat(document.getElementById('f-horas').value);
+      if (h > 0) recordatorio = Date.now() + h * 3600000;
+    }
+
+    leads.unshift({
+      id: Date.now(),
+      nombre,
+      telefono: document.getElementById('f-telefono').value.trim(),
+      correo: document.getElementById('f-correo').value.trim(),
+      rut: document.getElementById('f-rut').value.trim(),
+      estado: document.getElementById('f-estado').value,
+      notas: document.getElementById('f-notas').value.trim(),
+      creado: Date.now(),
+      ultimaGestion: Date.now(),
+      recordatorio,
+      recordatorioDisparado: false,
+    });
+
+    closeModal();
+    saveLeads();
+    renderLeads();
+    const msg = recordatorio
+      ? `${nombre} · Alarma: ${formatDateTime(recordatorio)}`
+      : `${nombre} ingresado al sistema`;
+    showNotification('green', '✅ Lead Agregado', msg);
+  }
+
+  // ─── CAMBIAR ESTADO ──────────────────────────────────
+  function changeStatus(id) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    const estados = ['no-agendado','agendado','seguimiento'];
+    const labels = {'no-agendado':'No Agendado','agendado':'Agendado','seguimiento':'Seguimiento'};
+    const idx = estados.indexOf(l.estado);
+    l.estado = estados[(idx+1) % estados.length];
+    l.ultimaGestion = Date.now();
+    saveLeads();
+    renderLeads();
+    showNotification('blue', '🔄 Estado Actualizado', `${l.nombre} → ${labels[l.estado]}`);
+  }
+
+  function convertLead(id) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    l.estado = 'convertido';
+    l.ultimaGestion = Date.now();
+    saveLeads();
+    renderLeads();
+    showNotification('green', '⭐ ¡Convertido!', `${l.nombre} es ahora un cliente`);
+  }
+
+  function deleteLead(id) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    if (confirm(`¿Eliminar a ${l.nombre}?`)) {
+      leads = leads.filter(x => x.id !== id);
+      saveLeads();
+      renderLeads();
+      showNotification('red', '🗑️ Eliminado', `${l.nombre} fue eliminado`);
+    }
+  }
+
+  function clearAll() {
+    if (leads.length === 0) { alert('No hay leads para eliminar'); return; }
+    if (confirm('¿Eliminar todos los leads?')) {
+      leads = [];
+      saveLeads();
+      renderLeads();
+      showNotification('green', '✅ Limpio', 'Sistema listo para nuevos leads');
+    }
+  }
+
+  // ─── LLAMADA ─────────────────────────────────────────
+  function startCall(id) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    currentCallId = id; callSeconds = 0; muted = false;
+    document.getElementById('call-name').textContent = l.nombre;
+    document.getElementById('call-number').textContent = l.telefono || 'Sin teléfono';
+    document.getElementById('call-email').textContent = l.correo || '';
+    document.getElementById('call-timer-display').textContent = '00:00';
+    document.getElementById('call-modal').classList.add('active');
+    document.getElementById('mute-btn').textContent = '🎤';
+    l.ultimaGestion = Date.now();
+    renderLeads();
+    callTimer = setInterval(() => {
+      callSeconds++;
+      const m = String(Math.floor(callSeconds/60)).padStart(2,'0');
+      const s = String(callSeconds%60).padStart(2,'0');
+      document.getElementById('call-timer-display').textContent = `${m}:${s}`;
+    }, 1000);
+  }
+
+  function endCall() {
+    clearInterval(callTimer);
+    document.getElementById('call-modal').classList.remove('active');
+    if (currentCallId) {
+      const l = leads.find(x => x.id === currentCallId);
+      if (l) {
+        if (l.estado === 'urgente') l.estado = 'seguimiento';
+        l.ultimaGestion = Date.now();
+        const dur = callSeconds;
+        saveLeads();
+        showNotification('blue','📞 Llamada Registrada',
+          `${l.nombre} · ${Math.floor(dur/60)}:${String(dur%60).padStart(2,'0')} min`);
+        renderLeads();
+      }
+    }
+    currentCallId = null; callSeconds = 0;
+  }
+
+  function toggleMute() {
+    muted = !muted;
+    document.getElementById('mute-btn').textContent = muted ? '🔇' : '🎤';
+  }
+
+  // ─── ALARMA ──────────────────────────────────────────
+  function showAlarm(id, tipo) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    alarmLeadId = id;
+
+    playAlarmSound();
+
+    // Notificación del navegador
+    if (Notification.permission === 'granted') {
+      new Notification(`🚨 LLAMAR AHORA: ${l.nombre}`, {
+        body: l.telefono || 'Revisa el sistema',
+        icon: '📞'
+      });
+    }
+
+    let subtitle = '';
+    let info = '';
+    if (tipo === 'recordatorio') {
+      subtitle = 'Recordatorio programado de llamada';
+      info = `Correo: ${l.correo || '-'}\n${l.rut ? 'RUT: ' + l.rut : ''}\n${l.notas || ''}`;
+    } else {
+      subtitle = 'Lleva más de 7 días sin gestión';
+      const days = Math.floor((Date.now() - l.ultimaGestion) / 86400000);
+      info = `${days} días sin contacto · ${l.correo || ''}\n${l.rut ? 'RUT: ' + l.rut : ''}`;
+    }
+
+    document.getElementById('alarm-subtitle').textContent = subtitle;
+    document.getElementById('alarm-name').textContent = l.nombre;
+    document.getElementById('alarm-phone').textContent = l.telefono || 'Sin teléfono registrado';
+    document.getElementById('alarm-info').textContent = info;
+    document.getElementById('alarm-modal').classList.add('active');
+  }
+
+  function closeAlarm() {
+    document.getElementById('alarm-modal').classList.remove('active');
+    alarmLeadId = null;
+  }
+
+  function snoozeAlarm() {
+    if (alarmLeadId) {
+      const l = leads.find(x => x.id === alarmLeadId);
+      if (l) {
+        l.recordatorio = Date.now() + 30 * 60000;
+        l.recordatorioDisparado = false;
+        saveLeads();
+        showNotification('yellow','😴 Pospuesto 30 min', `Se te recordará llamar a ${l.nombre}`);
+        renderLeads();
+      }
+    }
+    closeAlarm();
+  }
+
+  function callFromAlarm() {
+    const id = alarmLeadId;
+    closeAlarm();
+    if (id) startCall(id);
+  }
+
+  // ─── NOTIFICACIÓN ────────────────────────────────────
+  function showNotification(type, title, msg) {
+    const n = document.getElementById('notification');
+    document.getElementById('notif-title').textContent = title;
+    document.getElementById('notif-msg').textContent = msg;
+    n.className = `notification ${type} show`;
+    setTimeout(() => n.classList.remove('show'), 4500);
+  }
+
+  // ─── PERMISOS NOTIFICACIÓN ───────────────────────────
+  function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      document.getElementById('notif-bar').classList.add('show');
+    }
+  }
+
+  function requestNotifPermission() {
+    Notification.requestPermission().then(p => {
+      document.getElementById('notif-bar').classList.remove('show');
+      if (p === 'granted') {
+        showNotification('green', '🔔 Notificaciones activadas', 'Te avisaremos cuando debas llamar a un lead');
+        registerServiceWorker();
+      } else {
+        showNotification('yellow', '⚠️ Sin permisos', 'Actívalos en ajustes del navegador para recibir alertas');
+      }
+    });
+  }
+
+  // ─── PERSISTENCIA localStorage ───────────────────────
+  function saveLeads() {
+    try { localStorage.setItem('nexus_leads', JSON.stringify(leads)); } catch(e) {}
+  }
+
+  function loadLeads() {
+    try {
+      const raw = localStorage.getItem('nexus_leads');
+      if (raw) leads = JSON.parse(raw);
+    } catch(e) { leads = []; }
+  }
+
+  // ─── SERVICE WORKER ──────────────────────────────────
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    const swCode = `
+self.addEventListener('install', e => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+
+// Verificar leads cada 60 segundos
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SYNC_LEADS') {
+    self.__leads = e.data.leads;
+  }
+});
+
+setInterval(() => {
+  if (!self.__leads) return;
+  const now = Date.now();
+  self.__leads.forEach(l => {
+    if (l.estado === 'convertido') return;
+    if (l.recordatorio && !l.recordatorioDisparado && now >= l.recordatorio) {
+      self.registration.showNotification('📞 NEXUS CRM - ¡Llamar ahora!', {
+        body: l.nombre + ' · ' + (l.telefono || 'Ver app'),
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0a0f"/><text y=".9em" font-size="80">📞</text></svg>',
+        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23ff1744"/><text y=".9em" font-size="80">!</text></svg>',
+        tag: 'lead-' + l.id,
+        requireInteraction: true,
+        vibrate: [300, 100, 300, 100, 300],
+        data: { leadId: l.id }
+      });
+    }
+    // 7 días sin gestión
+    if ((now - l.ultimaGestion) / 86400000 >= 7 && l.estado !== 'urgente') {
+      self.registration.showNotification('🚨 NEXUS CRM - Lead urgente', {
+        body: l.nombre + ' lleva más de 7 días sin gestión',
+        tag: 'urgente-' + l.id,
+        requireInteraction: true,
+        vibrate: [500, 200, 500],
+        data: { leadId: l.id }
+      });
+    }
+  });
+}, 60000);
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(cs => {
+    if (cs.length > 0) { cs[0].focus(); cs[0].postMessage({type:'OPEN_ALARM', leadId: e.notification.data?.leadId}); }
+    else clients.openWindow('/');
+  }));
+});
+`;
+    const blob = new Blob([swCode], {type:'text/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).then(reg => {
+      console.log('SW registrado');
+      // Enviar leads al SW cada minuto
+      setInterval(() => syncLeadsToSW(reg), 60000);
+      syncLeadsToSW(reg);
+    }).catch(e => console.log('SW no disponible:', e));
+
+    // Escuchar mensajes del SW
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'OPEN_ALARM') {
+        const l = leads.find(x => x.id == e.data.leadId);
+        if (l) showAlarm(l.id, 'recordatorio');
+      }
+    });
+  }
+
+  function syncLeadsToSW(reg) {
+    if (reg.active) {
+      reg.active.postMessage({type:'SYNC_LEADS', leads});
+    }
+  }
+
+  // ─── PWA MANIFEST INLINE ─────────────────────────────
+  let deferredInstallPrompt = null;
+
+  function setupPWA() {
+    const manifest = {
+      name: 'NEXUS CRM',
+      short_name: 'NEXUS CRM',
+      description: 'CRM de seguimiento de leads con alarmas',
+      start_url: window.location.href,
+      display: 'standalone',
+      background_color: '#0a0a0f',
+      theme_color: '#0a0a0f',
+      icons: [{
+        src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="80" fill="%230a0a0f"/><text x="256" y="320" text-anchor="middle" font-size="280" fill="%2300e5ff">N</text></svg>',
+        sizes: '512x512', type: 'image/svg+xml'
+      }]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+    document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      if (!localStorage.getItem('pwa_dismissed')) {
+        document.getElementById('pwa-banner').classList.add('show');
+      }
+    });
+    window.addEventListener('appinstalled', () => {
+      document.getElementById('pwa-banner').classList.remove('show');
+      showNotification('green', '📲 App Instalada', 'NEXUS CRM en tu pantalla de inicio');
+    });
+  }
+
+  function installPWA() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(r => {
+        if (r.outcome === 'accepted') document.getElementById('pwa-banner').classList.remove('show');
+        deferredInstallPrompt = null;
+      });
+    } else {
+      // iOS instructions
+      showNotification('blue', '📲 Instalar en iOS', 'Toca Compartir → "Agregar a inicio"');
+    }
+  }
+
+  function dismissPWA() {
+    document.getElementById('pwa-banner').classList.remove('show');
+    localStorage.setItem('pwa_dismissed', '1');
+  }
+
+  // ─── LOOP PRINCIPAL ──────────────────────────────────
+  setInterval(() => { saveLeads(); renderLeads(); }, 30000);
+  setInterval(() => {
+    const now = Date.now();
+    leads.forEach(l => {
+      if (l.recordatorio && !l.recordatorioDisparado && now >= l.recordatorio) {
+        l.recordatorioDisparado = true;
+        saveLeads();
+        showAlarm(l.id, 'recordatorio');
+      }
+    });
+  }, 10000);
+
+  // ─── INIT ────────────────────────────────────────────
+  loadLeads();
+  setupPWA();
+  requestNotificationPermission();
+  if (Notification.permission === 'granted') registerServiceWorker();
+  renderLeads();
+</script>
+</body>
+</html>
